@@ -1,31 +1,37 @@
-import React, { useState } from 'react';
-import { redirect } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignIn() {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const redirectToHome = () => {
-        redirect('/');
+    const handleClick = () => {
+        navigate('/');
     };
-
-    // issue with redirect
+    
     const handleSubmit = (e) => {
         e.preventDefault();
         // send login info for verification!
         localStorage.setItem('successSign', 'true');
-        console.log('Email:', email);
-        console.log('Password:', password);
 
         // send user back to home
-        redirectToHome();
+        handleClick();
     };
+    
+    // prevent user from accessing this page, as it's unnecessary
+    useEffect(() => {
+        const isUserSignedIn = JSON.parse(localStorage.getItem('successSign'));
+        if (isUserSignedIn) {
+            handleClick();
+        }
+      }, [navigate]);
 
     return (
         <div className="sign-wrapper">
         <h2 className="sign-title">Please Sign-In!</h2>
         <div className="sign-input">
-            <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
             <input
                 type="email"
                 placeholder="your email"
@@ -43,7 +49,7 @@ export default function SignIn() {
                 required
             />
             <button type="submit" className='sign-btn'>Sign In</button>
-            </form>
+        </form>
         </div>
         </div>
     );

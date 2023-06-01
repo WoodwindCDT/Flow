@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import ProtectedRoute from './utils/ProtectedRoute';
 import Home from './components/pages/Home';
 import SignIn from './components/SignIn';
 
@@ -24,21 +25,10 @@ const App = () => {
   //   fetchData();
   // }, []);
 
-  const isUserSignedIn = JSON.parse(localStorage.getItem('successSign')) || localStorage.setItem('successSign', 'false');
-  console.log(isUserSignedIn);
-
   return (
     <Routes>
-      {isUserSignedIn ? (
-        <>
-          {/* Routes for authenticated users */}
-          <Route exact path="/" element={<Home />} />
-        </>
-      ) : (
-        <Route path="/" element={<Navigate to="/Sign-In" replace />} />
-      )}
-          {/* Define other routes */}
-        <Route path="/Sign-In" element={<SignIn />} />
+      <Route path="/" element={<ProtectedRoute Component={Home} />} />
+      <Route path="/SignIn" element={<SignIn />} />
     </Routes>
   )
 };
