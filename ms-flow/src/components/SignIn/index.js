@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { SET_LOGGED_ACTION } from '../../actions/List_Action';
+import { connect } from 'react-redux';
 
-export default function SignIn() {
+export function SignIn(props) {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -13,19 +16,18 @@ export default function SignIn() {
     const handleSubmit = (e) => {
         e.preventDefault();
         // send login info for verification!
-        localStorage.setItem('successSign', 'true');
+        // this.props.SET_LOGGED_ACTION(true);
 
         // send user back to home
         handleClick();
     };
     
     // prevent user from accessing this page, as it's unnecessary
-    useEffect(() => {
-        const isUserSignedIn = JSON.parse(localStorage.getItem('successSign'));
-        if (isUserSignedIn) {
-            handleClick();
-        }
-      }, [navigate]);
+    // useEffect(() => {
+    //     if (this.props.LOGGED_STATE.LOGGEDIN) {
+    //         handleClick();
+    //     }
+    //   }, [navigate]);
 
     return (
         <div className="sign-wrapper">
@@ -54,3 +56,17 @@ export default function SignIn() {
         </div>
     );
 };
+
+const mapStateToProps = (state) => {
+    // GETTING STATE VALUES FROM RETURN DEFAULT CASE IN REDUCERS/INDEX.JS
+    const { LOGGED_STATE } = state;
+    return { LOGGED_STATE };
+};
+
+const mapDispatchToProps = dispatch => (
+    bindActionCreators({
+        SET_LOGGED_ACTION
+    }, dispatch)
+);
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);

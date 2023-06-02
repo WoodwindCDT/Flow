@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { Route, Routes} from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { AuthProvider } from './providers/AuthProvider';
+import STORE from './store';
+
 import ProtectedRoute from './utils/ProtectedRoute';
 import Home from './components/pages/Home';
 import SignIn from './components/SignIn';
@@ -23,13 +27,18 @@ const App = () => {
   //     }
   //   }
   //   fetchData();
-  // }, []);
+  // }, []);  
 
   return (
-    <Routes>
-      <Route path="/" element={<ProtectedRoute Component={Home} />} />
-      <Route path="/SignIn" element={<SignIn />} />
-    </Routes>
+    // Auth Provider allows the storage/access of user info
+    <Provider store={STORE}>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<ProtectedRoute Component={Home} />} />
+          <Route path="/SignIn" element={<SignIn />} />
+        </Routes>
+      </AuthProvider>
+    </Provider>
   )
 };
 
