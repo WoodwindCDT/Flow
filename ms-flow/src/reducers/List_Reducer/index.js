@@ -9,19 +9,19 @@ const LOGGED_STATE = {
 
 // return logged state within mounted component
 // get function
-export function LOGIN_REDUCER (state = LOGGED_STATE, action) {
+export function LOGIN_REDUCER(state = LOGGED_STATE, action) {
     switch (action.type) {
-
-        case SET_LOGGED:
-
-        let IS_LOGGED = action.payload;
-
-        return {...state.LOGGEDIN, IS_LOGGED};
+      case SET_LOGGED:
         
-        default:
-            return state;
+        const IS_LOGGED = true;
+        state.LOGGEDIN = IS_LOGGED;
+
+        return { ...state, IS_LOGGED }; // Update the value of IS_LOGGED
+  
+      default:
+        return state;
     }
-};
+};  
 
 // session data is removed and user is successfully logged out!
 // update function

@@ -18,17 +18,17 @@ const AuthProvider = ({ children }) => {
     }, [authorized])
    
     // user actions
-    const signIn = async (email, password) => {
-        
+    const signIn = (email, password) => {
+
         const payload = {
             inputEmail: email,
             inputPassword: password
         };
-
+        
         // payload for input to server
-        console.log("User email & password: ", email, "&", password);
-        console.log("Setting Authorized to TRUE");
+        console.log("User email & password: "+ payload.inputEmail + " & "+ payload.inputPassword);
         setAuthorized(true);
+        STORE.dispatch(SET_LOGGED_ACTION(true));
     };
 
     const signOut = () => {

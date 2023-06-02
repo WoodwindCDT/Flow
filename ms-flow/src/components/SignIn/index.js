@@ -1,33 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bindActionCreators } from "@reduxjs/toolkit";
-import { SET_LOGGED_ACTION } from '../../actions/List_Action';
 import { connect } from 'react-redux';
+import { useAuth } from '../../providers/AuthProvider';
 
 export function SignIn(props) {
+    const {signIn} = useAuth();
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    
     const handleClick = () => {
         navigate('/');
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         // send login info for verification!
-        // this.props.SET_LOGGED_ACTION(true);
-
+        try {
+            await signIn(email, password);
+        } catch (error) {
+            console.log(error);
+        }
+        
         // send user back to home
         handleClick();
     };
     
     // prevent user from accessing this page, as it's unnecessary
-    // useEffect(() => {
-    //     if (this.props.LOGGED_STATE.LOGGEDIN) {
-    //         handleClick();
-    //     }
-    //   }, [navigate]);
+    useEffect(() => {
+        console.log(props.LOGGED_STATE.LOGGEDIN);
+        if (props.LOGGED_STATE.LOGGEDIN) {
+            handleClick();
+        }
+      }, [navigate]);
 
     return (
         <div className="sign-wrapper">
@@ -63,10 +68,4 @@ const mapStateToProps = (state) => {
     return { LOGGED_STATE };
 };
 
-const mapDispatchToProps = dispatch => (
-    bindActionCreators({
-        SET_LOGGED_ACTION
-    }, dispatch)
-);
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default connect(mapStateToProps, null)(SignIn);
