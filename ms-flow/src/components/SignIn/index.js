@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { useAuth } from '../../providers/AuthProvider';
 
 export function SignIn(props) {
-    const {signIn} = useAuth();
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,7 +15,8 @@ export function SignIn(props) {
         e.preventDefault();
         // send login info for verification!
         try {
-            await signIn(email, password);
+            // access signIn function from this point!
+            await props.state.signIn(email, password);
         } catch (error) {
             console.log(error);
         }
@@ -28,7 +27,6 @@ export function SignIn(props) {
     
     // prevent user from accessing this page, as it's unnecessary
     useEffect(() => {
-        console.log(props.LOGGED_STATE.LOGGEDIN);
         if (props.LOGGED_STATE.LOGGEDIN) {
             handleClick();
         }

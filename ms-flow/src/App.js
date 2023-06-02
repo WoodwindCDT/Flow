@@ -34,7 +34,7 @@ const App = () => {
     <Provider store={STORE}>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<ProtectedRoute Component={Home} />} />
+          <Route path="/" element={<Home />} />
           <Route path="/SignIn" element={<SignIn />} />
         </Routes>
       </AuthProvider>

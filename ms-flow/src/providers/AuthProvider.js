@@ -19,7 +19,7 @@ const AuthProvider = ({ children }) => {
    
     // user actions
     const signIn = (email, password) => {
-
+        
         const payload = {
             inputEmail: email,
             inputPassword: password
