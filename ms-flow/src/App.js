@@ -4,9 +4,8 @@ import { Provider } from 'react-redux';
 import { AuthProvider } from './providers/AuthProvider';
 import STORE from './store';
 
-import ProtectedRoute from './utils/ProtectedRoute';
-import Home from './components/pages/Home';
 import SignIn from './components/SignIn';
+import { Canvas } from './utils/Canvas';
 
 const App = () => {
   // const [isLoading, setIsLoading] = useState(true);
@@ -34,8 +33,7 @@ const App = () => {
     <Provider store={STORE}>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/SignIn" element={<SignIn />} />
+          <Route path="/" element={<Canvas />} />
         </Routes>
       </AuthProvider>
     </Provider>

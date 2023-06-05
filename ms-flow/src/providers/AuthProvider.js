@@ -36,6 +36,7 @@ const AuthProvider = ({ children }) => {
           console.log("Not logged in, can't log out!");
           return;
         }
+        console.log("Signing out of authorized user");
         STORE.dispatch(SET_RESET("Resetting all arrays!"));
         setAuthorized(INIT_AUTH); // return to false when user logs out
     };

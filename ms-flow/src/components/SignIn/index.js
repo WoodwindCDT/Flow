@@ -16,7 +16,7 @@ export function SignIn(props) {
         // send login info for verification!
         try {
             // access signIn function from this point!
-            await props.state.signIn(email, password);
+            await props.signIn(email, password);
         } catch (error) {
             console.log(error);
         }
@@ -30,7 +30,7 @@ export function SignIn(props) {
         if (props.LOGGED_STATE.LOGGEDIN) {
             handleClick();
         }
-      }, [navigate]);
+    }, [navigate]);
 
     return (
         <div className="sign-wrapper">
