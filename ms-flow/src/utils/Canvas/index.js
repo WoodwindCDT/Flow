@@ -8,7 +8,7 @@ export const Canvas = () => {
 
     return (
         <>
-            <button onClick={() => signOut()}>Sign Out</button>
+            {authorized ? <button onClick={() => signOut()}>Sign Out</button> : null}
             <ProtectedRoute Component={Home} auth={authorized} signIn={signIn}/>
         </>
     )

@@ -16,13 +16,13 @@ export function SignIn(props) {
         // send login info for verification!
         try {
             // access signIn function from this point!
-            await props.signIn(email, password);
+            // await props.signIn(email, password);
+            await props.signIn("admin@mymdselect.com", "test123"); // auto filled for development
+            // send user back to home
+            handleClick();
         } catch (error) {
             console.log(error);
         }
-        
-        // send user back to home
-        handleClick();
     };
     
     // prevent user from accessing this page, as it's unnecessary
@@ -43,7 +43,7 @@ export function SignIn(props) {
                 className='email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                // required
             />
             <input
                 type="password"
@@ -51,7 +51,7 @@ export function SignIn(props) {
                 className='password'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                // required
             />
             <button type="submit" className='sign-btn'>Sign In</button>
         </form>

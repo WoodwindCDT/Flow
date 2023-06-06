@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import {SET_RESET, SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
+import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
 const INIT_STATE = [];
@@ -8,6 +9,8 @@ const INIT_AUTH = false;
 
 const AuthProvider = ({ children }) => {
     const [authorized, setAuthorized] = useState(false);
+    const [isAdmin, setAdmin] = useState(false);
+    const [user, setUser] = useState({});
 
     useEffect(() => {
       if (!authorized) return;
@@ -18,17 +21,37 @@ const AuthProvider = ({ children }) => {
     }, [authorized])
    
     // user actions
-    const signIn = (email, password) => {
-        
-        const payload = {
-            inputEmail: email,
-            inputPassword: password
-        };
-        
-        // payload for input to server
-        console.log("User email & password: "+ payload.inputEmail + " & "+ payload.inputPassword);
-        setAuthorized(true);
-        STORE.dispatch(SET_LOGGED_ACTION(true));
+    const signIn = (email, password) => {  
+      const payload = {
+          username: email,
+          password: password
+      };
+
+      // Send the payload to the server
+      fetch(`${serverside}/auth/signin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          if (data.user != null) {
+            // Authentication succeeded
+            setAuthorized(true);
+            STORE.dispatch(SET_LOGGED_ACTION(true));
+            setUser(data.user);
+            console.log(user);
+          } else {
+            // Authentication failed
+            console.log(data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     };
 
     const signOut = () => {
