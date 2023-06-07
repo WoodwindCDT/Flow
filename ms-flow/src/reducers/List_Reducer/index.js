@@ -12,11 +12,8 @@ const LOGGED_STATE = {
 export function LOGIN_REDUCER(state = LOGGED_STATE, action) {
     switch (action.type) {
       case SET_LOGGED:
-        
         const IS_LOGGED = true;
-        state.LOGGEDIN = IS_LOGGED;
-
-        return { ...state, IS_LOGGED }; // Update the value of IS_LOGGED
+        return { ...state, LOGGEDIN: IS_LOGGED };
   
       default:
         return state;
@@ -25,25 +22,14 @@ export function LOGIN_REDUCER(state = LOGGED_STATE, action) {
 
 // session data is removed and user is successfully logged out!
 // update function
-export function LOGOUT_REDUCER (state = LOGGED_STATE, action) {
+export function LOGOUT_REDUCER(state = LOGGED_STATE, action) {
     switch (action.type) {
-
-        case RESET:
-        // A RESET FOR ALL
-
+      case RESET:
+        // message option
         console.log(action.payload);
-
-        let {
-            LOGGEDIN
-        } = state;
-
-        LOGGEDIN = INIT_LOG;
-
-        const RESET_ALL_STATE = {LOGGEDIN};
-
-        return RESET_ALL_STATE;
-        
-        default:
-            return state;
+        return { ...state, LOGGEDIN: INIT_LOG };
+  
+      default:
+        return state;
     }
-}
+  }

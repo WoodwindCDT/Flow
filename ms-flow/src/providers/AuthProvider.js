@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import {SET_RESET, SET_LOGGED_ACTION} from "../actions/List_Action";
+import {SET_RESET_ACTION, SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
 import { serverside } from "../site";
 
@@ -37,13 +37,11 @@ const AuthProvider = ({ children }) => {
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data)
           if (data.user != null) {
             // Authentication succeeded
             setAuthorized(true);
-            STORE.dispatch(SET_LOGGED_ACTION(true));
             setUser(data.user);
-            console.log(user);
+            STORE.dispatch(SET_LOGGED_ACTION(true));
           } else {
             // Authentication failed
             console.log(data.message);
@@ -60,7 +58,7 @@ const AuthProvider = ({ children }) => {
           return;
         }
         console.log("Signing out of authorized user");
-        STORE.dispatch(SET_RESET("Resetting all arrays!"));
+        STORE.dispatch(SET_RESET_ACTION("Resetting all arrays!"));
         setAuthorized(INIT_AUTH); // return to false when user logs out
     };
 

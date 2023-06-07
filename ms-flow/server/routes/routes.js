@@ -21,9 +21,19 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     if (result) {
         const isMatch = bcrypt.compareSync(user.password, result.password);
         if (isMatch) {
-            const { password, ...userWithoutPassword } = result;
-            // Passwords match, return a success message or relevant data
-            res.json({ message: "Login successful", user: userWithoutPassword });
+          const { lastlogged, password, ...updatedUser } = result;
+          // Update the lastLogged field in the document with the current timestamp
+          const currentTimestamp = new Date().getTime();
+          db_collection.updateOne(
+            { _id: result._id },
+            { $set: { lastlogged: currentTimestamp } },
+            function (err, updateResult) {
+              if (err) throw err;
+              if (updateResult.ok) console.log("Successful timestamp update");
+              // Passwords match, return a success message or relevant data
+              res.json({ message: "Login successful", user: updatedUser });
+            }
+          );
         } else {
             // Passwords don't match
             res.status(401).json({ message: "Invalid username or password" });
