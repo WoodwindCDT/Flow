@@ -4,13 +4,13 @@ import STORE from "../store";
 import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
-const INIT_STATE = [];
+const INIT_USER = {};
 const INIT_AUTH = false;
 
 const AuthProvider = ({ children }) => {
-    const [authorized, setAuthorized] = useState(false);
+    const [authorized, setAuthorized] = useState(INIT_AUTH);
     const [isAdmin, setAdmin] = useState(false);
-    const [user, setUser] = useState({});
+    const [user, setUser] = useState(INIT_USER);
 
     useEffect(() => {
       if (!authorized) return;
@@ -39,9 +39,9 @@ const AuthProvider = ({ children }) => {
         .then(data => {
           if (data.user != null) {
             // Authentication succeeded
+            STORE.dispatch(SET_LOGGED_ACTION(true));
             setAuthorized(true);
             setUser(data.user);
-            STORE.dispatch(SET_LOGGED_ACTION(true));
           } else {
             // Authentication failed
             console.log(data.message);
@@ -58,8 +58,10 @@ const AuthProvider = ({ children }) => {
           return;
         }
         console.log("Signing out of authorized user");
-        STORE.dispatch(SET_RESET_ACTION("Resetting all arrays!"));
+        STORE.dispatch(SET_LOGGED_ACTION(false));
+        // STORE.dispatch(SET_RESET_ACTION("Resetting all arrays!"));
         setAuthorized(INIT_AUTH); // return to false when user logs out
+        setUser(INIT_USER);
     };
 
     return (
@@ -67,6 +69,7 @@ const AuthProvider = ({ children }) => {
           value={{
             // bools
             authorized,
+            user,
             // functions to pass
             signIn,
             signOut,
