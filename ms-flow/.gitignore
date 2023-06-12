@@ -13,6 +13,7 @@ node_modules
 /build
 
 # misc
+realmapp.js
 .DS_Store
 config.env
 .env
