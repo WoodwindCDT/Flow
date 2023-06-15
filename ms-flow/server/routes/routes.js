@@ -2,10 +2,14 @@
 const express = require("express");
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const { connectPine, pinecone} = require('../pine/connection');
 require('dotenv').config();
 
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const dataRoutes = express.Router();
+
+// pine cone periph
+connectPine();
  
 // signin route for user
 dataRoutes.route("/auth/signin").post(function (req, res) {
@@ -45,6 +49,14 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     });
 });
 
-
+dataRoutes.route("/auth/pine-index").post(function (req, res) {
+  try {
+    const PINECONE_INDEX = pinecone.Index("info-store");
+    res.status(200).json({message: PINECONE_INDEX});
+  } catch (err) {
+    console.error('Error: ', err);
+    res.status(500).json({message: 'Internal Server Error'});
+  }
+});
 
 module.exports = dataRoutes;

@@ -43,7 +43,7 @@ const AuthProvider = ({ children }) => {
       }
     };
 
-    const signUp = async (username, password, organization, levelAccess) => {      
+    const signUp = async (username, password, organization) => {      
       try {
         // Hash the password using bcrypt
         // const hashedPassword = await bcrypt.hash(password, 10);
@@ -54,12 +54,9 @@ const AuthProvider = ({ children }) => {
     
         // After successful account creation, log in the user
         const user = await my_realm.logIn(credentials);
-
-        // Get the user's MongoDB Realm client
-        const mongoClient = user.mongoClient("beans");
     
         // Get the "zombies" collection in the "pvz" database
-        const collection = mongoClient.db("pvz").collection("zombies");
+        const collection = user.mongoClient("beans").db("pvz").collection("zombies");
         const levelAccess = [
           Realm.BSON.ObjectId("615c8126e6a4e29a42f3e8a3")
         ];
@@ -112,6 +109,7 @@ const AuthProvider = ({ children }) => {
             // functions to pass
             signIn,
             signOut,
+            signUp
           }}
         >
           {children}
