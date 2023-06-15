@@ -2,6 +2,7 @@
 const express = require("express");
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const WithAuth = require('../auth/index');
 const { connectPine, pinecone} = require('../pine/connection');
 require('dotenv').config();
 
@@ -49,7 +50,7 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     });
 });
 
-dataRoutes.route("/auth/pine-index").post(function (req, res) {
+dataRoutes.route("/auth/pine-index").post(WithAuth, function (req, res) {
   try {
     const PINECONE_INDEX = pinecone.Index("info-store");
     res.status(200).json({message: PINECONE_INDEX});

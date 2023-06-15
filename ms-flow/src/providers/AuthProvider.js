@@ -3,6 +3,7 @@ import * as Realm from "realm-web";
 import {my_realm} from "../realmapp";
 import {SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
+import { HTTPCONTEXT } from "../site";
 // import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
@@ -35,6 +36,9 @@ const AuthProvider = ({ children }) => {
           setUser(user_collection);
           STORE.dispatch(SET_LOGGED_ACTION(user.isLoggedIn));
           setAuthorized(true);
+
+          const BT = user.accessToken;
+          document.cookie = `accessToken=${BT}; path=/; Secure; ${HTTPCONTEXT}`
         } else {
           console.log("ERROR SIGNING IN: PASSWORD OR EMAIL INCORRECT.");
         }
@@ -43,42 +47,42 @@ const AuthProvider = ({ children }) => {
       }
     };
 
-    const signUp = async (username, password, organization) => {      
-      try {
-        // Hash the password using bcrypt
-        // const hashedPassword = await bcrypt.hash(password, 10);
+    // const signUp = async (username, password, organization) => {      
+    //   try {
+    //     // Hash the password using bcrypt
+    //     // const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Create a new user account using email/password authentication
-        const credentials = Realm.Credentials.emailPassword(username, password);
-        await my_realm.emailPasswordAuth.registerUser(credentials);
+    //     // Create a new user account using email/password authentication
+    //     const credentials = Realm.Credentials.emailPassword(username, password);
+    //     await my_realm.emailPasswordAuth.registerUser(credentials);
     
-        // After successful account creation, log in the user
-        const user = await my_realm.logIn(credentials);
+    //     // After successful account creation, log in the user
+    //     const user = await my_realm.logIn(credentials);
     
-        // Get the "zombies" collection in the "pvz" database
-        const collection = user.mongoClient("beans").db("pvz").collection("zombies");
-        const levelAccess = [
-          Realm.BSON.ObjectId("615c8126e6a4e29a42f3e8a3")
-        ];
+    //     // Get the "zombies" collection in the "pvz" database
+    //     const collection = user.mongoClient("beans").db("pvz").collection("zombies");
+    //     const levelAccess = [
+    //       Realm.BSON.ObjectId("615c8126e6a4e29a42f3e8a3")
+    //     ];
 
-        const zombie = {
-          username,
-          password: password,
-          organization,
-          organization_id: Realm.BSON.ObjectId("615c8126e6a4e29a42f3e8e3"), // Replace with the actual organization ID
-          level_access: levelAccess, // An array of partition IDs
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
+    //     const zombie = {
+    //       username,
+    //       password: password,
+    //       organization,
+    //       organization_id: Realm.BSON.ObjectId("615c8126e6a4e29a42f3e8e3"), // Replace with the actual organization ID
+    //       level_access: levelAccess, // An array of partition IDs
+    //       createdAt: new Date(),
+    //       updatedAt: new Date()
+    //     };
     
-        // Insert the new zombie document into the collection
-        await collection.insertOne(zombie);
+    //     // Insert the new zombie document into the collection
+    //     await collection.insertOne(zombie);
     
-        console.log("New zombie account created successfully!");
-      } catch (error) {
-        console.error("Error creating zombie account:", error);
-      }
-    };
+    //     console.log("New zombie account created successfully!");
+    //   } catch (error) {
+    //     console.error("Error creating zombie account:", error);
+    //   }
+    // };
 
     const signOut = async () => {
         if (!authorized) {
@@ -99,6 +103,10 @@ const AuthProvider = ({ children }) => {
       }
     };
 
+    const pine_submit = async (action, params) => {
+
+    }
+
     return (
         <AuthContext.Provider
           value={{
@@ -109,7 +117,8 @@ const AuthProvider = ({ children }) => {
             // functions to pass
             signIn,
             signOut,
-            signUp
+            //signUp,
+            pine_submit
           }}
         >
           {children}

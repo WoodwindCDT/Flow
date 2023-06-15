@@ -13,6 +13,8 @@ node_modules
 /build
 
 # misc
+server/auth
+server/w2v
 realmapp.js
 .DS_Store
 config.env
