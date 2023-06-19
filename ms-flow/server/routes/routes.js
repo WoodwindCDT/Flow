@@ -1,11 +1,19 @@
 // routes used for handling and requesting our data
 const express = require("express");
+const axios = require('axios');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const WithAuth = require('../auth/index');
 const { connectPine, pinecone} = require('../pine/connection');
+const { Configuration, OpenAIApi } = require("openai");
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const openai = new OpenAIApi(configuration);
 
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const dataRoutes = express.Router();
@@ -51,14 +59,30 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     });
 });
 
-dataRoutes.route("/auth/pine-index").post(WithAuth, function (req, res) {
-  console.log(req.cookies)
+dataRoutes.route("/auth/pine").post(WithAuth, function (req, res) {
   try {
     const PINECONE_INDEX = pinecone.Index("info-store");
     res.status(200).json({message: PINECONE_INDEX});
   } catch (err) {
     console.error('Error: ', err);
     res.status(500).json({message: 'Internal Server Error'});
+  }
+});
+
+dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
+  try {
+    const response = await openai.createCompletion({
+      model: "text-ada-001",
+      prompt: "How many stars explode in 0.25 seconds?",
+      max_tokens: 30,
+      temperature: 0,
+    });
+
+    const completion = response.data.choices[0].text.trim();
+    console.log(response.data)
+    res.status(200).send({ response: completion });
+  } catch (err) {
+    console.log(err.response);
   }
 });
 

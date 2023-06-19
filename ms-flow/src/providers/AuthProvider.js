@@ -4,7 +4,7 @@ import {my_realm} from "../realmapp";
 import {SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
 import { HTTPCONTEXT } from "../site";
-import {PINE_POST} from "../utils/Definitions/index";
+import {PINE_POST, OPENAI_POST} from "../utils/Definitions/index";
 import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
@@ -124,12 +124,43 @@ const AuthProvider = ({ children }) => {
     const pine_submit = async (action, params) => {
       switch(action) {
         case PINE_POST: // "POST"
-        await fetch(`${serverside}/auth/pine-index`, {
+        try {
+          const response = await fetch(`${serverside}/auth/pine/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${user.accessToken}`,
+            },
+            body: JSON.stringify({
+              params
+            })
+          });
+        
+          if (response.ok) {
+            const data = await response.json();
+            return data;
+          } else {
+            throw new Error('Request failed with status ' + response.status);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+        }
+        break;
+
+        default:
+          break;
+      }
+    };
+
+    const openai_submit = async (action, params) => {
+      switch(action) {
+        case OPENAI_POST: // "POST"
+        await fetch(`${serverside}/auth/openai/`, {
           method: 'POST',
           credentials: 'include',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.accessToken}`,
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             params
@@ -137,7 +168,7 @@ const AuthProvider = ({ children }) => {
         })
           .then(response => response.json())
           .then(data => {
-            console.log('Message:', data.message);
+            console.log('Response:', data.response);
         })
           .catch(error => {
             console.error('Error:', error);
@@ -160,7 +191,8 @@ const AuthProvider = ({ children }) => {
             signIn,
             signOut,
             //signUp,
-            pine_submit
+            pine_submit,
+            openai_submit
           }}
         >
           {children}
