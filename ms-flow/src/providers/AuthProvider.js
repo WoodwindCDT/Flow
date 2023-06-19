@@ -4,7 +4,8 @@ import {my_realm} from "../realmapp";
 import {SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
 import { HTTPCONTEXT } from "../site";
-// import { serverside } from "../site";
+import {PINE_POST} from "../utils/Definitions/index";
+import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
 const INIT_USER = {};
@@ -14,6 +15,7 @@ const AuthProvider = ({ children }) => {
     const [authorized, setAuthorized] = useState(INIT_AUTH);
     const [realm_user, setRealmUser] = useState(INIT_USER);
     const [user, setUser] = useState(INIT_USER);
+    // can check here for the cookie :)
     useEffect(() => {
       if (!authorized) return;
     
@@ -36,9 +38,24 @@ const AuthProvider = ({ children }) => {
           setUser(user_collection);
           STORE.dispatch(SET_LOGGED_ACTION(user.isLoggedIn));
           setAuthorized(true);
-
-          const BT = user.accessToken;
-          document.cookie = `accessToken=${BT}; path=/; Secure; ${HTTPCONTEXT}`
+          // set cookie on server side
+          try {
+            await fetch(`${serverside}/bake-my-cookie`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Authorization': `Bearer ${user.accessToken}`,
+              },
+            }).then(response => response.json())
+              .then(data => {
+                console.log(data.message);
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          } catch (err) {
+            console.log(err);
+          }          
         } else {
           console.log("ERROR SIGNING IN: PASSWORD OR EMAIL INCORRECT.");
         }
@@ -84,6 +101,7 @@ const AuthProvider = ({ children }) => {
     //   }
     // };
 
+    // remove cookie
     const signOut = async () => {
         if (!authorized) {
           console.log("Not logged in, can't log out!");
@@ -104,8 +122,32 @@ const AuthProvider = ({ children }) => {
     };
 
     const pine_submit = async (action, params) => {
+      switch(action) {
+        case PINE_POST: // "POST"
+        await fetch(`${serverside}/auth/pine-index`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`,
+          },
+          body: JSON.stringify({
+            params
+          })
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Message:', data.message);
+        })
+          .catch(error => {
+            console.error('Error:', error);
+        });
+        break;
 
-    }
+        default:
+          break;
+      }
+    };
 
     return (
         <AuthContext.Provider

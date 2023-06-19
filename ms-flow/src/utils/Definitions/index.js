@@ -1,0 +1,1 @@
+export const PINE_POST = "POST";

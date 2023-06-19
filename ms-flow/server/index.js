@@ -2,10 +2,20 @@ const express = require("express");
 const mongoose = require('mongoose');
 const app = express();
 const cors = require("cors");
+const cookieParser = require('cookie-parser');
 require("dotenv").config({ path: "./config.env" });
 const port = process.env.PORT || 5000;
-app.use(cors());
+
+const corsOptions = {
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Authorization', 'Content-Type'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
 app.use(require("./routes/routes"));
 
 // get driver connection

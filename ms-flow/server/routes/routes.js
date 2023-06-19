@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const WithAuth = require('../auth/index');
 const { connectPine, pinecone} = require('../pine/connection');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 
 // The router will be added as a middleware and will take control of requests starting with path /record.
 const dataRoutes = express.Router();
@@ -51,6 +52,7 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
 });
 
 dataRoutes.route("/auth/pine-index").post(WithAuth, function (req, res) {
+  console.log(req.cookies)
   try {
     const PINECONE_INDEX = pinecone.Index("info-store");
     res.status(200).json({message: PINECONE_INDEX});
@@ -58,6 +60,19 @@ dataRoutes.route("/auth/pine-index").post(WithAuth, function (req, res) {
     console.error('Error: ', err);
     res.status(500).json({message: 'Internal Server Error'});
   }
+});
+
+// route for setting the cookie
+dataRoutes.route('/bake-my-cookie').post(function (req, res) {
+  const accessToken = req.headers.authorization.split(' ')[1];
+  const encodedToken = jwt.sign({ accessToken }, process.env.COOKIE_SECRET);
+  const expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000); // Add 24 hours to current date
+  res.cookie('accessToken', encodedToken, {
+    expires: expirationDate,
+    httpOnly: true,
+    path: "http://localhost:3000/",
+  });
+  res.status(200).send({message: "Successful Batch!"});
 });
 
 module.exports = dataRoutes;
