@@ -8,6 +8,7 @@ const { connectPine, pinecone} = require('../pine/connection');
 const { Configuration, OpenAIApi } = require("openai");
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid')
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -59,28 +60,105 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     });
 });
 
-dataRoutes.route("/auth/pine").post(WithAuth, function (req, res) {
+dataRoutes.route("/auth/pine/add").post(WithAuth, async function (req, res) {
+  const {text} = req.body;
+  const index = pinecone.Index("info-store");
   try {
-    const PINECONE_INDEX = pinecone.Index("info-store");
-    res.status(200).json({message: PINECONE_INDEX});
+    const moderationResponse = await openai.createModeration({ input: text });
+    const [results] = moderationResponse.data.results;
+    if (results.flagged) {
+      res.status(500).json({message: "Text does not comply with OpenAi API."});
+      return;
+    }
+
+    const embeddingResponse = await openai.createEmbedding({
+      model: "text-embedding-ada-002",
+      input: text,
+    });
+    
+    const [{ embedding }] = embeddingResponse.data.data;
+    const dataId = uuidv4();
+    const upsertRequest = {
+      vectors: [
+        {
+          id: dataId,
+          values: embedding,
+          metadata: {
+            text,
+            genre: "info" // can store org ID here?
+          }
+        }
+      ],
+      namespace: "test"
+    };
+
+    const upsertResponse = await index.upsert({ upsertRequest });
+    console.log(upsertResponse);
+    res.status(200).json({ message: "Transmission Complete." });
   } catch (err) {
     console.error('Error: ', err);
     res.status(500).json({message: 'Internal Server Error'});
   }
 });
 
+dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
+  const {text} = req.body;
+  const index = pinecone.Index("info-store");
+  try {
+    const moderationResponse = await openai.createModeration({ input: text });
+    const [results] = moderationResponse.data.results;
+    if (results.flagged) {
+      res.status(500).json({message: "Text does not comply with OpenAi API."});
+      return;
+    }
+
+    const embeddingResponse = await openai.createEmbedding({
+      model: "text-embedding-ada-002",
+      input: text,
+    });
+    
+    const [{ embedding }] = embeddingResponse.data.data;
+
+    const queryRequest = {
+      vector: embedding,
+      topK: 1,
+      includeValues: true,
+      includeMetadata: true,
+      namespace: "test",
+    };
+
+    const queryResponse = await index.query({ queryRequest });
+    console.log(queryResponse); // for testing
+    const match = queryResponse.matches[0];
+    if (match.score < 0.85) {
+      res.status(200).json({ message: "No information found!" });
+      return;
+    }
+
+    res.status(200).json({ message: match.metadata});
+    return;
+  } catch (err) {
+    console.error('Error: ', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
   try {
+    const {text} = req.body;
     const response = await openai.createCompletion({
       model: "text-ada-001",
-      prompt: "How many stars explode in 0.25 seconds?",
+      prompt: text,
       max_tokens: 30,
       temperature: 0,
+      logprobs: 0,
     });
 
     const completion = response.data.choices[0].text.trim();
-    console.log(response.data)
-    res.status(200).send({ response: completion });
+    const vector = response.data.choices[0].logprobs.token_logprobs;
+    console.log(response.data);
+    console.log("VECTOR: ", vector);
+    res.status(200).send({ response: completion, vector_data: vector });
   } catch (err) {
     console.log(err.response);
   }

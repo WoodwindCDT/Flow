@@ -4,7 +4,7 @@ import {my_realm} from "../realmapp";
 import {SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
 import { HTTPCONTEXT } from "../site";
-import {PINE_POST, OPENAI_POST} from "../utils/Definitions/index";
+import {PINE_POST, OPENAI_POST, PINE_GET} from "../utils/Definitions/index";
 import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
@@ -125,16 +125,14 @@ const AuthProvider = ({ children }) => {
       switch(action) {
         case PINE_POST: // "POST"
         try {
-          const response = await fetch(`${serverside}/auth/pine/`, {
+          const response = await fetch(`${serverside}/auth/pine/add`, {
             method: 'POST',
             credentials: 'include',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${user.accessToken}`,
             },
-            body: JSON.stringify({
-              params
-            })
+            body: JSON.stringify({ text: params })
           });
         
           if (response.ok) {
@@ -147,7 +145,28 @@ const AuthProvider = ({ children }) => {
           console.error('Error:', error);
         }
         break;
-
+        case PINE_GET:
+          try {
+            const response = await fetch(`${serverside}/auth/pine/search`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.accessToken}`,
+              },
+              body: JSON.stringify({ text: params })
+            });
+          
+            if (response.ok) {
+              const data = await response.json();
+              return data;
+            } else {
+              throw new Error('Request failed with status ' + response.status);
+            }
+          } catch (error) {
+            console.error('Error:', error);
+          }
+        break;
         default:
           break;
       }
@@ -162,9 +181,7 @@ const AuthProvider = ({ children }) => {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            params
-          })
+          body: JSON.stringify({ text: params })
         })
           .then(response => response.json())
           .then(data => {

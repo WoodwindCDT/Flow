@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { PINE_POST } from '../../utils/Definitions';
+import { PINE_GET } from '../../utils/Definitions';
 
-export default function C2(props) {
+export default function C3(props) {
   const { organization, funk } = props;
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
 
   const handleSearch = async () => {
-    const res = await funk(PINE_POST, searchQuery);
-    setModalContent(JSON.stringify(res)); // Convert object to string
+    const res = await funk(PINE_GET, searchQuery);
+    setModalContent(JSON.stringify(res));
     setModalOpen(true);
   };
 
@@ -19,15 +19,15 @@ export default function C2(props) {
 
   return (
     <div className="section-2-wrapper">
-      <h2 className="section-2-title">Add Information in {organization}</h2>
+      <h2 className="section-2-title">Search for Information in {organization}</h2>
       <div className="search-bar">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Enter your information..."
+          placeholder="Enter your search query..."
         />
-        <button onClick={handleSearch}>Add</button>
+        <button onClick={handleSearch}>Search</button>
       </div>
 
       {modalOpen && (

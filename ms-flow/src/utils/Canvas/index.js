@@ -12,7 +12,7 @@ export const Canvas = () => {
             {authorized ? <button onClick={() => signOut()}>Sign Out</button> : null}
             {authorized ? <button onClick={() => pine_submit(PINE_POST, "")}>TEST PINECONE</button> : null}
             {authorized ? <button onClick={() => openai_submit(OPENAI_POST, "How many stars explode every 0.25 seconds?")}>TEST OPENAI</button> : null}
-            <ProtectedRoute Component={Home} info={user} auth={authorized} signIn={signIn} c2_submit={pine_submit} />
+            <ProtectedRoute Component={Home} info={user} auth={authorized} signIn={signIn} c_submit={pine_submit} />
         </>
     )
 };
