@@ -36,19 +36,8 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
     if (result) {
         const isMatch = bcrypt.compareSync(user.password, result.password);
         if (isMatch) {
-          const { lastlogged, password, ...updatedUser } = result;
-          // Update the lastLogged field in the document with the current timestamp
-          const currentTimestamp = new Date().getTime();
-          db_collection.updateOne(
-            { _id: result._id },
-            { $set: { lastlogged: currentTimestamp } },
-            function (err, updateResult) {
-              if (err) throw err;
-              if (updateResult.ok) console.log("Successful timestamp update");
-              // Passwords match, return a success message or relevant data
-              res.json({ message: "Login successful", user: updatedUser });
-            }
-          );
+          const { password, ...updatedUser } = result;
+          res.json({ message: "Login successful", user: updatedUser });
         } else {
             // Passwords don't match
             res.status(401).json({ message: "Invalid username or password" });
@@ -61,7 +50,7 @@ dataRoutes.route("/auth/signin").post(function (req, res) {
 });
 
 dataRoutes.route("/auth/pine/add").post(WithAuth, async function (req, res) {
-  const {text} = req.body;
+  const {text, organization, organization_id, level_access, user} = req.body; // user will provide some text and in addition, they will specify which level/collection they want to store it to
   const index = pinecone.Index("info-store");
   try {
     const moderationResponse = await openai.createModeration({ input: text });
@@ -85,11 +74,13 @@ dataRoutes.route("/auth/pine/add").post(WithAuth, async function (req, res) {
           values: embedding,
           metadata: {
             text,
-            genre: "info" // can store org ID here?
+            organization: organization,
+            organization_id: organization_id, // can store org ID here?
+            posted_by: user
           }
         }
       ],
-      namespace: "test"
+      namespace: level_access
     };
 
     const upsertResponse = await index.upsert({ upsertRequest });
@@ -102,7 +93,7 @@ dataRoutes.route("/auth/pine/add").post(WithAuth, async function (req, res) {
 });
 
 dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
-  const {text} = req.body;
+  const {text, level_access} = req.body;
   const index = pinecone.Index("info-store");
   try {
     const moderationResponse = await openai.createModeration({ input: text });
@@ -122,9 +113,9 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
     const queryRequest = {
       vector: embedding,
       topK: 1,
-      includeValues: true,
+      includeValues: false,
       includeMetadata: true,
-      namespace: "test",
+      namespace: level_access,
     };
 
     const queryResponse = await index.query({ queryRequest });
@@ -155,10 +146,8 @@ dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
     });
 
     const completion = response.data.choices[0].text.trim();
-    const vector = response.data.choices[0].logprobs.token_logprobs;
-    console.log(response.data);
-    console.log("VECTOR: ", vector);
-    res.status(200).send({ response: completion, vector_data: vector });
+
+    res.status(200).send({ response: completion });
   } catch (err) {
     console.log(err.response);
   }

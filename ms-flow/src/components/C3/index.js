@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PINE_GET } from '../../utils/Definitions';
 
 export default function C3(props) {
-  const { organization, funk } = props;
+  const { funk } = props;
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
@@ -19,7 +19,7 @@ export default function C3(props) {
 
   return (
     <div className="section-2-wrapper">
-      <h2 className="section-2-title">Search for Information in {organization}</h2>
+      <h2 className="section-2-title">Search for Information</h2>
       <div className="search-bar">
         <input
           type="text"

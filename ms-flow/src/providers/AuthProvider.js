@@ -15,6 +15,11 @@ const AuthProvider = ({ children }) => {
     const [authorized, setAuthorized] = useState(INIT_AUTH);
     const [realm_user, setRealmUser] = useState(INIT_USER);
     const [user, setUser] = useState(INIT_USER);
+    const [access, setAccess] = useState(INIT_USER);
+
+    //const [read, setRead] = useState(0); // for restricting user from frequest requests per session
+    //const [write, setWrite] = useState(0);
+
     // can check here for the cookie :)
     useEffect(() => {
       if (!authorized) return;
@@ -34,10 +39,27 @@ const AuthProvider = ({ children }) => {
           setRealmUser(user);
           const collection = user.mongoClient("beans").db("pvz").collection("zombies");
           const user_collection = await collection.findOne({ username: email });
+
+          // now check user belongs to the organization to apply level access def
+          const accessGranted = await user.callFunction('check_user_access', user_collection.organization_id, user_collection._id)
+
+          if (!accessGranted) {
+            return; // user belongs to no organization, should report to IT admin or Supervisor
+          } else {
+            setAccess({
+              organization: accessGranted.organization,
+              organization_id: accessGranted.organization_id,
+              level_access: accessGranted.ants
+            });
+          };
           
-          setUser(user_collection);
+          setUser(
+            user_collection
+          );
+
           STORE.dispatch(SET_LOGGED_ACTION(user.isLoggedIn));
           setAuthorized(true);
+          
           // set cookie on server side
           try {
             await fetch(`${serverside}/bake-my-cookie`, {
@@ -132,7 +154,13 @@ const AuthProvider = ({ children }) => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${user.accessToken}`,
             },
-            body: JSON.stringify({ text: params })
+            body: JSON.stringify({ 
+              text: params.text,
+              user: user.firstname,
+              organization: access.organization, // persistent storage to the user's org
+              organization_id: access.organization_id, // more info on the org
+              level_access: params.access // based on user's choice
+            })
           });
         
           if (response.ok) {
@@ -154,7 +182,10 @@ const AuthProvider = ({ children }) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${user.accessToken}`,
               },
-              body: JSON.stringify({ text: params })
+              body: JSON.stringify({ 
+                text: params.text,
+                level_access: params.access // based on user's choice
+              })
             });
           
             if (response.ok) {
@@ -204,6 +235,7 @@ const AuthProvider = ({ children }) => {
             authorized,
             // general user info
             user,
+            access,
             // functions to pass
             signIn,
             signOut,

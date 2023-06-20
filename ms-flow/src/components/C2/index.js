@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import { PINE_POST } from '../../utils/Definitions';
 
 export default function C2(props) {
-  const { organization, funk } = props;
+  const { funk, levels } = props; 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLevelAccess, setSelectedLevelAccess] = useState(levels[0].title);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
 
   const handleSearch = async () => {
-    const res = await funk(PINE_POST, searchQuery);
+    const params = {
+      text: searchQuery,
+      access: selectedLevelAccess
+    };
+    const res = await funk(PINE_POST, params);
     setModalContent(JSON.stringify(res)); // Convert object to string
     setModalOpen(true);
   };
@@ -19,7 +24,7 @@ export default function C2(props) {
 
   return (
     <div className="section-2-wrapper">
-      <h2 className="section-2-title">Add Information in {organization}</h2>
+      <h2 className="section-2-title">Add Information</h2>
       <div className="search-bar">
         <input
           type="text"
@@ -27,6 +32,13 @@ export default function C2(props) {
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Enter your information..."
         />
+        <select value={selectedLevelAccess} onChange={(e) => setSelectedLevelAccess(e.target.value)}>
+          {levels.map((levelAccess) => (
+            <option key={levelAccess.id} value={levelAccess.id}>
+              {levelAccess.title}
+            </option>
+          ))}
+        </select>
         <button onClick={handleSearch}>Add</button>
       </div>
 
