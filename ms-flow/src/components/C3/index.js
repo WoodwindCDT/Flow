@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { PINE_GET } from '../../utils/Definitions';
 
 export default function C3(props) {
-  const { funk } = props;
+  const { funk, levels } = props; 
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLevelAccess, setSelectedLevelAccess] = useState(levels[0].title);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState('');
 
   const handleSearch = async () => {
-    const res = await funk(PINE_GET, searchQuery);
-    setModalContent(JSON.stringify(res));
+    const params = {
+      text: searchQuery,
+      access: selectedLevelAccess
+    };
+    const res = await funk(PINE_GET, params);
+    setModalContent(JSON.stringify(res)); // Convert object to string
     setModalOpen(true);
   };
 
@@ -18,15 +23,22 @@ export default function C3(props) {
   };
 
   return (
-    <div className="section-2-wrapper">
-      <h2 className="section-2-title">Search for Information</h2>
+    <div className="section-3-wrapper">
+      <h2 className="section-3-title">Search for Information</h2>
       <div className="search-bar">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Enter your search query..."
+          placeholder="Start your search..."
         />
+        <select value={selectedLevelAccess} onChange={(e) => setSelectedLevelAccess(e.target.value)}>
+          {levels.map((levelAccess) => (
+            <option key={levelAccess.id} value={levelAccess.id}>
+              {levelAccess.title}
+            </option>
+          ))}
+        </select>
         <button onClick={handleSearch}>Search</button>
       </div>
 

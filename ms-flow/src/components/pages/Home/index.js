@@ -13,7 +13,7 @@ export default function Home(props) {
     <C1 firstname={firstname} />
     <h4>Access to {organization}</h4>
     <C2 funk={c_submit} levels={level_access} />
-    <C3 funk={c_submit} />
+    <C3 funk={c_submit} levels={level_access} />
     </>
   );
 };

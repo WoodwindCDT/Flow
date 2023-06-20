@@ -35,7 +35,7 @@ code {
 }
 
 /* specifics styling */
-.section-1-wrapper, .section-2-wrapper {
+.section-1-wrapper, .section-2-wrapper, .section-3-wrapper {
   margin: 2%;
   padding: 2%;
   border: 2px white dashed;
