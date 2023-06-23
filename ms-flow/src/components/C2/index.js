@@ -34,7 +34,7 @@ export default function C2(props) {
         />
         <select value={selectedLevelAccess} onChange={(e) => setSelectedLevelAccess(e.target.value)}>
           {levels.map((levelAccess) => (
-            <option key={levelAccess.id} value={levelAccess.id}>
+            <option key={new Date()} value={levelAccess.id}>
               {levelAccess.title}
             </option>
           ))}

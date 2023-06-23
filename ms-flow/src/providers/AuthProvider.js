@@ -4,7 +4,7 @@ import {my_realm} from "../realmapp";
 import {SET_LOGGED_ACTION} from "../actions/List_Action";
 import STORE from "../store";
 import { HTTPCONTEXT } from "../site";
-import {PINE_POST, OPENAI_POST, PINE_GET} from "../utils/Definitions/index";
+import {PINE_POST, OPENAI_POST, PINE_GET, PINE_DELETE} from "../utils/Definitions/index";
 import { serverside } from "../site";
 
 const AuthContext = React.createContext(null);
@@ -42,9 +42,8 @@ const AuthProvider = ({ children }) => {
 
           // now check user belongs to the organization to apply level access def
           const accessGranted = await user.callFunction('check_user_access', user_collection.organization_id, user_collection._id)
-
           if (!accessGranted) {
-            return; // user belongs to no organization, should report to IT admin or Supervisor
+            return false; // user belongs to no organization, should report to IT admin or Supervisor
           } else {
             setAccess({
               organization: accessGranted.organization,
@@ -53,9 +52,7 @@ const AuthProvider = ({ children }) => {
             });
           };
           
-          setUser(
-            user_collection
-          );
+          setUser(user_collection);
 
           STORE.dispatch(SET_LOGGED_ACTION(user.isLoggedIn));
           setAuthorized(true);
@@ -75,6 +72,7 @@ const AuthProvider = ({ children }) => {
               .catch(err => {
                 console.log(err);
               });
+            return true; // successful log!
           } catch (err) {
             console.log(err);
           }          
@@ -135,7 +133,25 @@ const AuthProvider = ({ children }) => {
             STORE.dispatch(SET_LOGGED_ACTION(false));
             setAuthorized(INIT_AUTH); // return to false when user logs out
             setUser(INIT_USER);
-          }  else {
+            // remove cookie
+            try {
+              await fetch(`${serverside}/torch-my-cookie`, {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Authorization': `Bearer ${user.accessToken}`,
+                },
+              }).then(response => response.json())
+                .then(data => {
+                  console.log(data.message);
+                })
+                .catch(err => {
+                  console.log(err);
+              });
+            } catch (err) {
+              console.log(err);
+            }          
+          } else {
             console.log("ERROR SIGNING OUT: User not authenticated.");
           }
         } catch (error) {
@@ -184,6 +200,8 @@ const AuthProvider = ({ children }) => {
               },
               body: JSON.stringify({ 
                 text: params.text,
+                organization: access.organization, // persistent storage to the user's org
+                organization_id: access.organization_id, // more info on the org
                 level_access: params.access // based on user's choice
               })
             });
@@ -198,6 +216,26 @@ const AuthProvider = ({ children }) => {
             console.error('Error:', error);
           }
         break;
+        case PINE_DELETE:
+          try {
+            const response = await fetch(`${serverside}/auth/pine/delete-all`, {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.accessToken}`,
+              }
+            });
+          
+            if (response.ok) {
+              console.log(await response.json());
+            } else {
+              throw new Error('Request failed with status ' + response.status);
+            }
+          } catch (err) {
+            console.error('Error: ', err);
+          }
+          break;
         default:
           break;
       }

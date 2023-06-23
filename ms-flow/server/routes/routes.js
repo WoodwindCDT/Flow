@@ -93,7 +93,7 @@ dataRoutes.route("/auth/pine/add").post(WithAuth, async function (req, res) {
 });
 
 dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
-  const {text, level_access} = req.body;
+  const {text, organization, organization_id, level_access} = req.body;
   const index = pinecone.Index("info-store");
   try {
     const moderationResponse = await openai.createModeration({ input: text });
@@ -112,6 +112,11 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
 
     const queryRequest = {
       vector: embedding,
+      // filter search to only looking at matching org, org_id when possible
+      filter: {
+        "organization": {"$eq": organization},
+        "organization_id": {"$eq": organization_id}
+      },
       topK: 1,
       includeValues: false,
       includeMetadata: true,
@@ -121,11 +126,24 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
     const queryResponse = await index.query({ queryRequest });
     console.log(queryResponse); // for testing
     const match = queryResponse.matches[0];
-    if (match.score < 0.85) {
+    if (match.score < 0.79) {
       res.status(200).json({ message: "No information found!" });
       return;
-    }
+    };
 
+    // const completion = await openai.createChatCompletion({
+    //   model: "gpt-3.5-turbo",
+    //   messages: [
+    //     {
+    //       "role": "system",
+    //       "content": `At ${organization}, the user is looking for info. Provide a friendly, very short interpretation of what they found.`,
+    //     },
+    //     { "role": "user", "content": match.metadata.text },
+    //   ],
+    //   max_tokens: 50
+    // });    
+
+    // res.status(200).json({ message: match.metadata, openai_response: completion.data});
     res.status(200).json({ message: match.metadata});
     return;
   } catch (err) {
@@ -134,24 +152,36 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
   }
 });
 
-dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
+dataRoutes.route("/auth/pine/delete-all").delete(WithAuth, async function (req, res) {
+  const index = pinecone.Index("info-store");
   try {
-    const {text} = req.body;
-    const response = await openai.createCompletion({
-      model: "text-ada-001",
-      prompt: text,
-      max_tokens: 30,
-      temperature: 0,
-      logprobs: 0,
-    });
-
-    const completion = response.data.choices[0].text.trim();
-
-    res.status(200).send({ response: completion });
-  } catch (err) {
-    console.log(err.response);
+    const result = await index.delete1({deleteAll: true, namespace: "test"}); // only for testing purposes
+    if (result) {
+      res.status(200).json(result);
+    }
+  } catch (error) {
+    console.log('Error: ', error);
   }
-});
+})
+
+// dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
+//   try {
+//     const {text} = req.body;
+//     const response = await openai.createCompletion({
+//       model: "text-ada-001",
+//       prompt: text,
+//       max_tokens: 30,
+//       temperature: 0,
+//       logprobs: 0,
+//     });
+
+//     const completion = response.data.choices[0].text.trim();
+
+//     res.status(200).send({ response: completion });
+//   } catch (err) {
+//     console.log(err.response);
+//   }
+// });
 
 // route for setting the cookie
 dataRoutes.route('/bake-my-cookie').post(function (req, res) {
@@ -164,6 +194,11 @@ dataRoutes.route('/bake-my-cookie').post(function (req, res) {
     path: "http://localhost:3000/",
   });
   res.status(200).send({message: "Successful Batch!"});
+});
+
+dataRoutes.route('/torch-my-cookie').delete(WithAuth, function (req, res) {
+  res.clearCookie('accessToken');
+  res.status(200).send({message: "Batch Torched!"});
 });
 
 module.exports = dataRoutes;

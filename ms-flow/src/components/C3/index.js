@@ -14,7 +14,7 @@ export default function C3(props) {
       access: selectedLevelAccess
     };
     const res = await funk(PINE_GET, params);
-    setModalContent(JSON.stringify(res)); // Convert object to string
+    setModalContent(JSON.stringify(res));
     setModalOpen(true);
   };
 
@@ -34,7 +34,7 @@ export default function C3(props) {
         />
         <select value={selectedLevelAccess} onChange={(e) => setSelectedLevelAccess(e.target.value)}>
           {levels.map((levelAccess) => (
-            <option key={levelAccess.id} value={levelAccess.id}>
+            <option key={new Date()} value={levelAccess.id}>
               {levelAccess.title}
             </option>
           ))}

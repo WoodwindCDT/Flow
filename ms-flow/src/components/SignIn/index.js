@@ -17,8 +17,12 @@ export function SignIn(props) {
         try {
             // access signIn function from this point!
             // await props.signIn(email, password);
-            await props.signIn("admin@mymdselect.com", "test123"); // auto filled for development
+            const res = await props.signIn("admin@mymdselect.com", "test123"); // auto filled for development
             // send user back to home
+            if (!res) {
+                console.log("LOOKS LIKE YOU HAVE NO ACCESS")
+                return;
+            };
             handleClick();
         } catch (error) {
             console.log(error);
