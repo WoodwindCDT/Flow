@@ -14,7 +14,7 @@ export default function C3(props) {
       access: selectedLevelAccess
     };
     const res = await funk(PINE_GET, params);
-    setModalContent(JSON.stringify(res));
+    setModalContent(res);
     setModalOpen(true);
   };
 
@@ -43,14 +43,22 @@ export default function C3(props) {
       </div>
 
       {modalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <button className="close-button" onClick={closeModal}>
-              Close
-            </button>
-            <div className="modal-body">{modalContent}</div>
+      <div className="modal">
+        <div className="modal-content">
+          <button className="close-button" onClick={closeModal}>
+            Close
+          </button>
+          <div className="modal-body">
+            <div className="card">
+              <div className="card-content">
+                <h3>Query: {modalContent.query} </h3>
+                <br />
+                <h3>Answer: {modalContent.summary}</h3>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
       )}
     </div>
   );

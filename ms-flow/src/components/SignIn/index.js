@@ -16,8 +16,8 @@ export function SignIn(props) {
         // send login info for verification!
         try {
             // access signIn function from this point!
-            // await props.signIn(email, password);
-            const res = await props.signIn("admin@mymdselect.com", "test123"); // auto filled for development
+            const res = await props.signIn(email, password);
+            // const res = await props.signIn("admin@mymdselect.com", "test123"); // auto filled for development
             // send user back to home
             if (!res) {
                 console.log("LOOKS LIKE YOU HAVE NO ACCESS")

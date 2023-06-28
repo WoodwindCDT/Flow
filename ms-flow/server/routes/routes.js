@@ -117,38 +117,49 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
         "organization": {"$eq": organization},
         "organization_id": {"$eq": organization_id}
       },
-      topK: 1,
+      topK: 2,
       includeValues: false,
       includeMetadata: true,
       namespace: level_access,
     };
 
     const queryResponse = await index.query({ queryRequest });
-    console.log(queryResponse); // for testing
-    const match = queryResponse.matches[0];
-    if (match.score < 0.79) {
-      res.status(200).json({ message: "No information found!" });
+    
+    const matches = queryResponse.matches;
+    console.log(matches)
+    if (matches.length === 0 || matches[0].score < 0.75) {
+      res.status(200).json({ summary: "No information found!", query: text });
       return;
-    };
+    }
 
-    // const completion = await openai.createChatCompletion({
-    //   model: "gpt-3.5-turbo",
-    //   messages: [
-    //     {
-    //       "role": "system",
-    //       "content": `At ${organization}, the user is looking for info. Provide a friendly, very short interpretation of what they found.`,
-    //     },
-    //     { "role": "user", "content": match.metadata.text },
-    //   ],
-    //   max_tokens: 50
-    // });    
+    const topMatches = matches.slice(0, 2).filter(match => match.score > 0.75);
+    if (topMatches.length === 0) {
+      res.status(200).json({ summary: "No matches above threshold found!", query: text });
+      return;
+    }
+    
+    const readableMatches = topMatches.map(match => ({
+      text: match.metadata.text,
+      score: match.score
+    }));
+    
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          "role": "system",
+          "content": `Based on the user's search vs result, provide a friendly, short/sweet summary. Queried: ${text}. Note: Results may contain 2 likely responses, so you may combine them if necessary to provide further context in summary.`,
+        },
+        { "role": "user", "content": JSON.stringify(readableMatches) },
+      ],
+      max_tokens: 150
+    });
 
-    // res.status(200).json({ message: match.metadata, openai_response: completion.data});
-    res.status(200).json({ message: match.metadata});
+    res.status(200).json({ summary: completion.data.choices[0].message.content, query: text});
     return;
   } catch (err) {
     console.error('Error: ', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ summary: 'Internal Server Error', query: text });
   }
 });
 
