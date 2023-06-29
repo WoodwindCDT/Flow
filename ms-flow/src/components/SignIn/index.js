@@ -49,7 +49,7 @@ export function SignIn(props) {
             className="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            // required
+            required
             disabled={isLoading}
           />
           <input
@@ -58,7 +58,7 @@ export function SignIn(props) {
             className="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            // required
+            required
             disabled={isLoading}
           />
           <button type="submit" className="sign-btn" disabled={isLoading}>
