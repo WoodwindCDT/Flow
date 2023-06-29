@@ -163,17 +163,17 @@ dataRoutes.route("/auth/pine/search").post(WithAuth, async function(req, res) {
   }
 });
 
-dataRoutes.route("/auth/pine/delete-all").delete(WithAuth, async function (req, res) {
-  const index = pinecone.Index("info-store");
-  try {
-    const result = await index.delete1({deleteAll: true, namespace: "test"}); // only for testing purposes
-    if (result) {
-      res.status(200).json(result);
-    }
-  } catch (error) {
-    console.log('Error: ', error);
-  }
-})
+// dataRoutes.route("/auth/pine/delete-all").delete(WithAuth, async function (req, res) {
+//   const index = pinecone.Index("info-store");
+//   try {
+//     const result = await index.delete1({deleteAll: true, namespace: "test"}); // only for testing purposes
+//     if (result) {
+//       res.status(200).json(result);
+//     }
+//   } catch (error) {
+//     console.log('Error: ', error);
+//   }
+// })
 
 // dataRoutes.route("/auth/openai").post(WithAuth, async function(req, res) {
 //   try {
